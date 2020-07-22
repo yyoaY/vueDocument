@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+
+<head>
+    <title>基础-列表渲染</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+</head>
+
+<body>
+    <h1>列表渲染</h1>
+    <h2>用v-for把一个数组对应为一组元素</h2>
+    <ul id="example-1">
+        <li v-for="item in items" :key="item.message">
+            {{item.message}}
+        </li>
+    </ul>
+    <script>
+        var example1 = new Vue({
+            el: '#example-1',
+            data: {
+                items: [{
+                    message: 'Foo'
+                }, {
+                    message: 'Bar'
+                }]
+            }
+        })
+    </script>
+
+    <ul id="example-2">
+        <li v-for="(item,index) in items">
+            {{parentMessage}}-{{index}}-{{item.message}}
+        </li>
+    </ul>
+    <script>
+        var example2 = new Vue({
+            el: '#example-2',
+            data: {
+                parentMessage: 'Parent',
+                items: [{
+                    message: 'Foo'
+                }, {
+                    message: 'Bar'
+                }]
+            }
+        })
+    </script>
+
+    <div v-for="item of items"></div>
+
+    <h2>在v-for里使用的对象</h2>
+    <ul id="v-for-object" class="demo">
+        <li v-for="value in object">
+            {{value}}
+        </li>
+    </ul>
+    <script>
+        new Vue({
+            el: '#v-for-object',
+            data: {
+                object: {
+                    title: 'How to do lists in Vue',
+                    author: 'Jane Doe',
+                    publishedAt: '2016-04-10'
+                }
+            }
+        })
+    </script>
+
+    <!-- 你也可以提供第二个的参数为 property 名称 (也就是键名)： -->
+    <div v-for="(value,name) in object">
+        {{name}}:{{value}}
+    </div>
+
+    <!-- 还可以用第三个参数作为索引： -->
+    <div v-for="(value,name,index) in object">
+        {{index}}.{{name}}:{{value}}
+    </div>
+
+    <h2>维护状态</h2>
+    <div v-for="item in items" v-bind:key="item.id">
+        <!-- 内容 -->
+    </div>
+
+    <h2>数组更新检测</h2>
+    <h3>替换数组</h3>
+    <script>
+        example1.items = example1.items.filter(function(item) {
+            return item.message.match(/Foo/)
+        })
+    </script>
+
+    <h2>显示过滤/排序后的结果</h2>
+    <div id="e1">
+        <li v-for="n in evenNumber">{{n}}</li>
+    </div>
+    <script>
+        new Vue({
+            el: '#e1',
+            data: {
+                number: [1, 2, 3, 4, 5]
+            },
+            computed: {
+                evenNumbers: function() {
+                    return this.numbers.filter(function(number) {
+                        return number % 2 === 0
+                    })
+                }
+            }
+        })
+    </script>
+
+    <div id="e2">
+        <ul v-for="set in sets">
+            <li v-for="n in even(set)">{{n}}</li>
+        </ul>
+    </div>
+    <script>
+        new Vue({
+            el: '#e2',
+            data: {
+                sets: [
+                    [1, 2, 3, 4, 5],
+                    [6, 7, 8, 9, 10]
+                ],
+
+            },
+            methods: {
+                even: function(numbers) {
+                    return numbers.filter(function(number) {
+                        return number % 2 === 0
+                    })
+                }
+            }
+        })
+    </script>
+
+    <h2>在v-for里使用值范围</h2>
+    <div>
+        <span v-for="n in 10">{{n}}</span>
+    </div>
+
+    <h2>在template上使用v-for</h2>
+    <ul>
+        <template v-for="item in items">
+            <li>{{item.msg}}</li>
+            <li class="divider" role="presentation"></li>
+        </template>
+    </ul>
+
+    <h2>v-for 与 v-if 一同使用</h2>
+    <li v-for="todo in todos" v-if="!todo.isCompelete">
+        {{todo}}
+    </li>
+
+    <ul v-if="todos.length">
+        <li v-for="todo in todos">
+            {{todo}}
+        </li>
+    </ul>
+    <p v-else>No todos left!</p>
+
+    <h2>在组件上使用v-for</h2>
+    <my-component v-for="item in items" :key="item.id"></my-component>
+
+    <my-component v-for="(item,index) in items" v-bind:item="item" v-bind:index="index" v-bind:key="item.id"></my-component>
+
+    <div id="todo-list-example">
+        <form v-on:submit.prevent="addNewTodo">
+            <lable for="new-todo">Add a todo</lable>
+            <input v-model="newTodoText" id="new-todo" placeholder="E.g. Feed the cat">
+            <button>Add</button>
+        </form>
+        <ul>
+            <li is="todo-item" v-for="(todo,index) in todos" v-bind:key="todo.id" v-bind:title="todo.title" v-on:remove="todos.splice(index,1)"></li>
+        </ul>
+    </div>
+    <script>
+        Vue.component('todo-item', {
+            template: '\
+            <li>\
+                {{title}}\
+                <button v-on:click="$emit(\'remove\')">Remove</button>\
+            </li>\
+            ',
+            props: ['title']
+        })
+        new Vue({
+            el: '#todo-list-example',
+            data: {
+                newTodoText: '',
+                todos: [{
+                    id: 1,
+                    title: 'Do the dishes'
+                }, {
+                    id: 2,
+                    title: 'Take out the trash'
+                }, {
+                    id: 3,
+                    title: 'Mow the lawn'
+                }],
+                nextTodoId: 4
+            },
+            methods: {
+                addNewTodo: function() {
+                    this.todos.push({
+                        id: this.nextTodoId++,
+                        title: this.newTodoText
+                    })
+                    this.newTodoText = ''
+                }
+            }
+        })
+    </script>
+</body>
