@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+
+<head>
+    <title>基础-计算属性和侦听器</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+</head>
+
+<body>
+    <h1>计算属性和侦听器</h1>
+    <h2>计算属性</h2>
+    <!-- 在模板中放入太多的逻辑会让模板过重且难以维护。例如： -->
+    <div id="example0">
+        {{message.split('').reverse().join('')}}
+    </div>
+
+    <h3>基础例子</h3>
+    <div id="example">
+        <p>Original message:"{{message}}"</p>
+        <p>Computed reversed message:"{{reversedMessage}}"</p>
+    </div>
+    <script>
+        var vm = new Vue({
+            el: '#example',
+            data: {
+                message: 'Hello'
+            },
+            computed: {
+                //计算属性的getter
+                reversedMessage: function() {
+                    //this 指向 vm 实例
+                    return this.message.split('').reverse().join('')
+                }
+            }
+        })
+
+        console.log(vm.reversedMessage) //=>'olleH'
+        vm.message = "Goodbye"
+        console.log(vm.reversedMessage) //=>'eybdooG'
+    </script>
+
+    <h3>计算属性缓存vs方法</h3>
+    <p>Reversed message:"{{reversedMessage()}}"</p>
+    <script>
+        //在组件中
+        methods: {
+            reversedMessage: function() {
+                return this.message.split('').reverse().join('')
+            }
+        }
+    </script>
+    <!-- 
+        两种方式的最终结果确实是完全相同的。
+        然而，不同的是计算属性是基于它们的响应式依赖进行缓存的。 
+    -->
+    <!-- 
+        这也同样意味着下面的计算属性将不再更新，
+        因为 Date.now() 不是响应式依赖：
+    -->
+    <script>
+        computed: {
+            now: function() {
+                return Date.now()
+            }
+        }
+    </script>
+
+    <h3>计算属性vs侦听属性</h3>
+    <div id="demo">{{fullName}}</div>
+    <script>
+        var vm = new Vue({
+            el: '#demo',
+            data: {
+                firstName: 'Foo',
+                lastName: 'Bar',
+                fullName: 'Foo Bar'
+            },
+            watch: {
+                firstName: function(val) {
+                    this.fullName = val + ' ' + this.lastName
+                },
+                lastName: function(val) {
+                    this.fullName = this.firstName + ' ' + val
+                }
+            }
+        })
+
+        //上面代码是命令式且重复的。将它与计算属性的版本进行比较:
+
+        var vm = new Vue({
+            el: '#demo',
+            data: {
+                firstName: 'Foo',
+                lastName: 'Bar'
+            },
+            computed: {
+                fullName: function() {
+                    return this.firstName + ' ' + this.lastName
+                }
+            }
+        })
+    </script>
+
+    <h3>计算属性的setter</h3>
+    <script>
+        //计算属性默认只有getter，不过在需要时你也可以提供一个setter
+
+        //...
+        computed: {
+            fullName: {
+                //getter
+                get: function() {
+                    return this.firstName + ' ' + this.lastName
+                },
+                //setter
+                set: function(newValue) {
+                    var names = newValue.split(' ')
+                    this.firstName = names[0]
+                    this.lastName = names[names.length - 1]
+                }
+            }
+        }
+    </script>
+
+    <h2>侦听器</h2>
+    <div id="watch-example">
+        <p>
+            Ask a yes/no question:
+            <input v-model="question">
+        </p>
+        <p>{{answer}}</p>
+    </div>
+    <!-- 因为AJAX库和通用工具的生态已经相当丰富，Vue核心代码没有重复 -->
+    <!-- 提供这些功能以保持精简。这也可以让你自由选择自己更熟悉的工具。 -->
+    <script src="https://cdn.jsdelivr.net/npm/axios@0.12.0/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lodash@4.13.1/lodash.min.js"></script>
+    <script>
+        var watchExampleVM = new Vue({
+            el: '#watch-example',
+            data: {
+                question: '',
+                answer: 'I cannot give you an answer until you ask a question!'
+            },
+            watch: {
+                //如果 question 发生改变，这个函数就会运行
+                question: function(newQuestion, oldQuestion) {
+                    this.answer = 'Waiting for you to stop typing...'
+                    this.debouncedGetAnswer()
+                }
+            },
+            created: function() {
+                //_.debounce 是通过Lodash限制操作频率的函数
+                //在这个例子中，我们希望限制访问 yesno.wtf/api的频率
+                //AJAX请求直到用户输入完毕才会发出。想要了解更多关于
+                //_.debounce函数（及其亲近_.throttle）的知识，
+                //请参考：https://lodash.com/docs#debounce
+                this.debouncedGetAnswer = _.debounce(this.getAnswer, 500)
+            },
+            methods: {
+                getAnswer: function() {
+                    if (this.question.indexOf('?') === -1) {
+                        this.answer = 'Questions usually contain a question mark. :-)'
+                        return
+                    }
+                    this.answer = 'Thinking...'
+                    var vm = this
+                    axios.get('https://yesno.wtf/api').then(function(response) {
+                        vm.answer = _.capitalize(response.data.answer)
+                    }).catch(function(error) {
+                        vm.answer = 'Error!Could not reach the API.' + error
+                    })
+                }
+            }
+        })
+    </script>
+</body>

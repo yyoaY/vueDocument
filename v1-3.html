@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+
+<head>
+    <title>基础-模板语法</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+</head>
+
+<body>
+    <h1>模板语法</h1>
+    <h2>插值</h2>
+
+    <h3>文本</h3>
+    <span>Message:{{msg}}</span>
+    <span v-once>这个将不会改变：{{msg}}</span>
+
+    <h3>原始HTML</h3>
+    <p>Using mustaches:{{rawHtml}}</p>
+    <p>Using v-html directive:<span v-html="rawHtml"></span></p>
+
+    <h3>Attribute</h3>
+    <div v-bind:id="dynamicId"></div>
+    <button v-bind:disabled="isButtonDisabled">Button</button>
+
+    <h3>使用JavaScript表达式</h3>
+    {{ number + 1 }} {{ ok ? 'YES' : 'NO' }} {{ message.split('').reverse().join('') }}
+
+    <div v-bind:id="'list-' + id"></div>
+
+    <!-- 
+        这些表达式会在所属 Vue 实例的数据作用域下作为 JavaScript 被解析。
+        有个限制就是，每个绑定都只能包含单个表达式，
+        所以下面的例子都不会生效。 
+    -->
+
+    <!-- 这是语句，不是表达式 -->
+    {{ var a = 1 }}
+
+    <!-- 流控制也不会生效，请使用三元表达式 -->
+    {{ if (ok) { return message}}}
+
+    <h2>指令</h2>
+    <p v-if="seen">现在你看到我了</p>
+    <!-- 这里，v-if 指令将根据表达式 seen 的值的真假来插入/移除 <p> 元素。 -->
+
+    <h3>参数</h3>
+    <a v-bind:href="url">...</a>
+    <a v-on:click="doSomething">...</a>
+
+    <h3>动态参数</h3>
+    <!-- 
+        注意，参数表达式的写法存在一些约束，如之后的“对动态参数表达式的约束”章节所述。
+     -->
+    <a v-bind:[attributeName]="url">...</a>
+    <a v-on:[eventName]="doSomething">...</a>
+
+    <!-- 这会触发一个编译警告 -->
+    <a v-bind:[ 'foo'+bar]="value">...</a>
+
+    <!-- 
+         在DOM中使用模板时这段代码会被转换为 v-bind:[someattr] 。
+         除非在实例中有一个名为“someattr"的property，否则代码不会工作。
+      -->
+    <a v-bind:[someAttr]="value">...</a>
+
+    <h3>修饰符</h3>
+    <form v-on:submit.prevent="onSubmit"></form>
+
+    <h2>缩写</h2>
+    <h3>v-bind 缩写</h3>
+    <!-- 完整语法 -->
+    <a v-bind:href="url">...</a>
+
+    <!-- 缩写 -->
+    <a :href="url">...</a>
+
+    <!-- 动态参数的缩写（2.6.0+） -->
+    <a :[key]="url">...</a>
+
+    <h3>v-on 缩写</h3>
+    <!-- 完整语法 -->
+    <a v-on:click="doSomething">...</a>
+
+    <!-- 缩写 -->
+    <a @click="doSomething">...</a>
+
+    <!-- 动态参数的缩写（2.6.0+） -->
+    <a @[event]="doSomething">...</a>
+</body>
