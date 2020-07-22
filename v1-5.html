@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+
+<head>
+    <title>基础-Class与Style绑定</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+</head>
+
+<body>
+    <h1>Class与Style绑定</h1>
+    <h2>绑定HTML Class</h2>
+    <h3>对象语法</h3>
+    <div v-bind:class="{active:isActive}"></div>
+
+    <div class="static" v-bind:class="{active:isActive,'text-danger':hasError"></div>
+    <script>
+        data: {
+            isActive: true,
+            hasError: false
+        }
+    </script>
+    <!-- 结果渲染为 -->
+    <div class="static active"></div>
+
+    <div v-bind:class="classObject"></div>
+    <script>
+        data: {
+            classObject: {
+                active: true,
+                'text-danger': false
+            }
+        }
+    </script>
+
+    <div v-bind:class="classObject"></div>
+    <script>
+        data: {
+                isActive: true,
+                error: null
+            },
+            computed: {
+                classObject: function() {
+                    return {
+                        active: this.isActive && !this.error,
+                        'text-danger': this.error && this.error.type === 'fatal'
+                    }
+                }
+            }
+    </script>
+
+    <h3>数组语法</h3>
+    <div class="[activeClass,errorClass]"></div>
+    <script>
+        data: {
+            activeClass: 'active',
+            errorClass: 'text-danger'
+        }
+    </script>
+    <!-- 渲染为 -->
+    <div class="active text-danger"></div>
+
+    <div v-bind:class="[isActive?activeClass:'',errorClass]"></div>
+
+    <div v-bind:class="[{active:isActive},errorClass]"></div>
+
+    <h3>用在组件上</h3>
+    <script>
+        //如果你声明了这个组件
+        Vue.component('my-component', {
+            template: '<p class="foo bar">Hi</p>'
+        })
+    </script>
+    <!-- 然后在使用它的时候添加一些class -->
+    <my-component class="baz boo"></my-component>
+    <!-- HTML将被渲染为 -->
+    <p class="foo bar baz boo">Hi</p>
+    <!-- 对于带数据绑定class也同样适用 -->
+    <my-component v-bind:class="{active:isActive}"></my-component>
+    <!-- 当isActive为truthy时，HTML将被渲染成为 -->
+    <p class="foo bar active">Hi</p>
+
+    <h2>绑定内联样式</h2>
+    <h3>对象语法</h3>
+    <div v-bind:style="{color:activeColor,fontSize:fontSize+'px'}"></div>
+    <script>
+        data: {
+            activeColor: 'red',
+            fontSize: 30
+        }
+    </script>
+
+    <div v-bind:style="styleObject"></div>
+    <script>
+        data: {
+            styleObject: {
+                color: 'red',
+                fontSize: '13px'
+            }
+        }
+    </script>
+
+    <h3>数组语法</h3>
+    <div v-bind:style="[baseStyles,overridingStyles]"></div>
+
+    <h3>多重值</h3>
+    <div :style="{display:['-webkit-box','-ms-flexbox','flex']}"></div>
+</body>
