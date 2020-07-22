@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+
+<head>
+    <title>基础-条件渲染</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+</head>
+
+<body>
+    <h1>条件渲染</h1>
+    <h2>v-if</h2>
+    <h1 v-if="awesome">Vue is awesome!</h1>
+
+    <h1 v-if="awesome">Vue is awesome!</h1>
+    <h1 v-else>Oh no</h1>
+
+    <h3>在 template 元素上使用 v-if 条件渲染分组</h3>
+    <template v-if="ok">
+        <h1>Title</h1>
+        <p>Paragraph 1</p>
+        <p>Paragraph 2</p>
+    </template>
+
+    <h3>v-else</h3>
+    <div v-if="Math.random() > 0.5">
+        Now you see me
+    </div>
+    <div v-else>
+        Now you don't
+    </div>
+
+    <h3>v-else-if</h3>
+    <div v-if="type==='A'">
+        A
+    </div>
+    <div v-else-if="type==='B'">
+        B
+    </div>
+    <div v-else-if="type==='C'">
+        C
+    </div>
+    <div v-else>
+        Not A/B/C
+    </div>
+
+    <h3>用key管理可复用的元素</h3>
+    <template v-if="loginType==='username'">
+        <label>Username</label>
+        <input placeholder="Enter your username">
+    </template>
+    <template v-else>
+        <label>Email</label>
+        <input placeholder="Enter your email address">
+    </template>
+    <!-- 那么在上面的代码中切换 loginType 将不会清除用户已经输入的内容。 -->
+
+    <template v-if="loginType==='username'">
+        <label>Username</label>
+        <input placeholder="Enter your username" key="username-input">
+    </template>
+    <template v-else>
+        <label>Email</label>
+        <input placeholder="Enter your email address" key="email-input">
+    </template>
+    <!-- 现在，每次切换时，输入框都将被重新渲染。 -->
+
+    <h2>v-show</h2>
+    <h1 v-show="ok">Hello!</h1>
+
+</body>
