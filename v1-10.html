@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+
+<head>
+    <title>基础-组件基础</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+</head>
+
+<body>
+    <h1>组件基础</h1>
+    <h2>基本示例</h2>
+    <script>
+        Vue.component('button-counter', {
+            data: function() {
+                return {
+                    count: 0
+                }
+            },
+            template: '<button v-on:click="count++">You clicked me {{count}} times.</button>'
+        })
+    </script>
+    <div id="components-demo">
+        <button-counter></button-counter>
+    </div>
+    <script>
+        new Vue({
+            el: '#components-demo'
+        })
+    </script>
+
+    <h2>组件的复用</h2>
+    <div id="components-demo">
+        <button-counter></button-counter>
+        <button-counter></button-counter>
+        <button-counter></button-counter>
+    </div>
+
+    <h3>data必须是一个函数</h3>
+    <script>
+        //当我们定义这个 <button-counter> 组件时，
+        //你可能会发现它的 data 并不是像这样直接提供一个对象：
+        data: {
+            count: 0
+        }
+
+        //取而代之的是，一个组件的 data 选项必须是一个函数,
+        //因此每个实例可以维护一份被返回对象的独立的拷贝：
+        data: function() {
+            return {
+                count: 0
+            }
+        }
+    </script>
+
+    <h2>组件的组织</h2>
+    <script>
+        Vue.component('my-component-name', {
+            //...options...
+        })
+    </script>
+
+    <h2>通过Prop向子组件传递数据</h2>
+    <script>
+        Vue.component('blog-post', {
+            props: ['title'],
+            template: '<h3>{{title}}</h3>'
+        })
+    </script>
+
+    <blog-post title="My journey with Vue"></blog-post>
+    <blog-post title="Blogging with Vue"></blog-post>
+    <blog-post title="Why Vue is so fun"></blog-post>
+
+    <!-- 然而在一个典型的应用中，你可能在 data 里有一个博文的数组： -->
+    <script>
+        new Vue({
+            el: '#blog-post-demo',
+            data: {
+                posts: [{
+                    id: 1,
+                    title: 'My journey with Vue'
+                }, {
+                    id: 2,
+                    title: 'Blogging with Vue'
+                }, {
+                    id: 3,
+                    title: 'Why Vue is so fun'
+                }]
+            }
+        })
+    </script>
+    <!-- 并想要为每篇博文渲染一个组件： -->
+    <blog-post v-for="post in posts" v-bind:key="post.id" v-bind:title="post.title"></blog-post>
+
+    <h2>单个根元素</h2>
+    <h3>{{title}}</h3>
+
+    <h3>{{title}}</h3>
+    <div v-html="content"></div>
+
+    <div class="blog-post">
+        <h3>{{title}}</h3>
+        <div v-html="content"></div>
+    </div>
+
+    <blog-post v-for="post in posts" v-bind:key="post.id" v-bind:title="post.title" v-bind:content="post.content" v-bind:publishedAt="post.publishedAt" v-bind:comments="post.comments"></blog-post>
+
+    <blog-post v-for="post in posts" v-bind:key="post.id" v-bind:post="post"></blog-post>
+    <script>
+        Vue.component('blog-post', {
+            props: ['post'],
+            template: `
+            <div class="blog-post">
+            <h3>{{post.title}}</h3>
+            <div v-html="post.content"></div>
+            </div>
+            `
+        })
+    </script>
+
+    <h2>监听子组件事件</h2>
+    <!-- 在其父组件中，我们可以通过添加一个 postFontSize 数据 property 来支持这个功能： -->
+    <script>
+        new Vue({
+            el: '#blog-posts=events-demo',
+            data: {
+                posts: [ /*...*/ ],
+                postFontSize: 1
+            }
+        })
+    </script>
+    <!-- 它可以在模板中用来控制所有博文的字号： -->
+    <div id="blog-posts-events-demo">
+        <div :style="{fontSize:postFontSize + 'em'}">
+            <blog-post v-for="post in posts" v-bind:key="post.id" v-bind:post="post"></blog-post>
+        </div>
+    </div>
+    <!-- 现在我们在每篇博文正文之前添加一个按钮来放大字号： -->
+    <script>
+        Vue.component('blog-post', {
+            props: ['post'],
+            template: `
+            <div class="blog-post">
+              <h3>{{post.title}}</h3>
+              <button>
+              Enlarge text
+              </button>
+              <div v-html="post.content"></div>
+            </div>
+            `
+        })
+    </script>
+    <!-- 问题是这个按钮不会做任何事： -->
+    <button>Enlarge text</button>
+
+    <!-- 父级组件可以像处理 native DOM 事件一样通过 v-on 监听子组件实例的任意事件： -->
+    <blog-post ... v-on:enlarge-text="postFontSize +=0.1"></blog-post>
+
+    <!-- 同时子组件可以通过调用内建的 $emit 方法并传入事件名称来触发一个事件： -->
+    <button v-on:click="$emit('enlarge-text')">
+        Enlarge text
+    </button>
+
+    <h3>使用事件抛出一个值</h3>
+    <!-- 例如我们可能想让 <blog-post> 组件决定它的文本要放大多少。
+        这时可以使用 $emit 的第二个参数来提供这个值： -->
+    <button v-on:click="$emit('enlarge-text',0.1)">
+        Enlarge text
+    </button>
+
+    <!-- 然后当在父级组件监听这个事件的时候，
+        我们可以通过 $event 访问到被抛出的这个值： -->
+    <blog-post ... v-on:enlarge-text="postFontSize += $event"></blog-post>
+    <!-- 或者，如果这个事件处理函数是一个方法： -->
+    <blog-post ... v-on:enlarge-text="onEnlargeText"></blog-post>
+    <!-- 那么这个值将会作为第一个参数传入这个方法： -->
+    <script>
+        methods: {
+            onEnlargeText: function(enlargeAmount) {
+                this.postFontSize += enlargeAmount
+            }
+        }
+    </script>
+
+    <h3>在组件上使用v-model</h3>
+    <input v-model="searchText">
+
+    <!-- 等价于： -->
+    <input v-bind:value="searchText" v-on:input="searchText = $event.target.value">
+
+    <!-- 当用在组件上时，v-model 则会这样： -->
+    <custom-input v-bind:value="searchText" v-on:input="searchText = $event"></custom-input>
+
+    <!-- 写成代码之后是这样的： -->
+    <script>
+        Vue.component('custom-input', {
+            props: ['value'],
+            template: `
+            <input v-bind:value="value" v-on:input="$emit('input',$event.target.value)">
+            `
+        })
+    </script>
+
+    <custom-input v-model="searchText"></custom-input>
+
+    <h3>通过插槽分发内容</h3>
+    <alert-box>
+        Somthing bad happened.
+    </alert-box>
+
+    <script>
+        Vue.component('alert-box', {
+            template: `
+            <div class="demo-alert-box">
+            <strong>Error!</strong>
+            <slot></slot>
+            </div>
+            `
+
+        })
+    </script>
+
+    <!-- 组件会在 currentTabComponent 改变是改变 -->
+    <component v-bind:is="currentTabComponent"></component>
+
+    <h2>解析DOM模板时的注意事项</h2>
+    <table>
+        <blog-post-row></blog-post-row>
+    </table>
+
+    <table>
+        <tr is="blog-post-row"></tr>
+    </table>
+
+</body>
